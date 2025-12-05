@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ export default function BookAppointment() {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    phone: "",
     artworkType: "",
     date: "",
     message: "",
@@ -26,6 +27,7 @@ export default function BookAppointment() {
   const [errors, setErrors] = useState({
     name: "",
     email: "",
+    phone: "",
     message: "",
   });
 
@@ -33,6 +35,8 @@ export default function BookAppointment() {
 
   const microsoftEmailRegex =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.(?:[a-zA-Z]{2,})$/;
+
+  const phoneRegex = /^[6-9]\d{9}$/;
 
   const validateField = (name: string, value: string) => {
     let error = "";
@@ -49,6 +53,12 @@ export default function BookAppointment() {
       }
     }
 
+    if (name === "phone") {
+      if (!phoneRegex.test(value)) {
+        error = "Phone number must be a valid 10-digit mobile number.";
+      }
+    }
+
     if (name === "message") {
       if (value.trim().length < 20) {
         error = "Project details must be at least 20 characters.";
@@ -59,7 +69,9 @@ export default function BookAppointment() {
   };
 
   // Handle input change
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
 
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -80,11 +92,13 @@ export default function BookAppointment() {
   const isSubmitDisabled =
     !form.name ||
     !form.email ||
+    !form.phone ||
     !form.artworkType ||
     !form.date ||
     !form.message ||
     errors.name !== "" ||
     errors.email !== "" ||
+    errors.phone !== "" ||
     errors.message !== "";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -98,11 +112,14 @@ export default function BookAppointment() {
     });
 
     try {
-      const response = await fetch(`https://formspree.io/f/${import.meta.env.VITE_FORM_KEY}`, {
-        method: "POST",
-        body: data,
-        headers: { Accept: "application/json" },
-      });
+      const response = await fetch(
+        `https://formspree.io/f/${import.meta.env.VITE_FORM_KEY}`,
+        {
+          method: "POST",
+          body: data,
+          headers: { Accept: "application/json" },
+        }
+      );
 
       const result = await response.json();
 
@@ -118,7 +135,14 @@ export default function BookAppointment() {
       }
 
       setSubmitted(true);
-      setForm({ name: "", email: "", artworkType: "", date: "", message: "" });
+      setForm({
+        name: "",
+        email: "",
+        artworkType: "",
+        date: "",
+        message: "",
+        phone: "",
+      });
     } catch (err) {
       console.error("Form error:", err);
     }
@@ -146,7 +170,10 @@ export default function BookAppointment() {
           >
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold mb-2">
+              <label
+                htmlFor="name"
+                className="block text-sm font-semibold mb-2"
+              >
                 Name *
               </label>
               <Input
@@ -162,9 +189,34 @@ export default function BookAppointment() {
               )}
             </div>
 
+            {/* Phone Number */}
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-semibold mb-2"
+              >
+                Your Phone Number *
+              </label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                className="bg-muted border-border"
+                required
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+              )}
+            </div>
+
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold mb-2"
+              >
                 Email *
               </label>
               <Input
@@ -204,7 +256,10 @@ export default function BookAppointment() {
 
             {/* Date */}
             <div>
-              <label htmlFor="date" className="block text-sm font-semibold mb-2">
+              <label
+                htmlFor="date"
+                className="block text-sm font-semibold mb-2"
+              >
                 Desired Date *
               </label>
               <Input
@@ -220,7 +275,10 @@ export default function BookAppointment() {
 
             {/* Message */}
             <div>
-              <label htmlFor="message" className="block text-sm font-semibold mb-2">
+              <label
+                htmlFor="message"
+                className="block text-sm font-semibold mb-2"
+              >
                 Project Details *
               </label>
               <Textarea
