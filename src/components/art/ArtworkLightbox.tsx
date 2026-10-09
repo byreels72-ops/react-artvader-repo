@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { portfolioItems } from "@/data/featuredData";
+import { lockScroll } from "@/lib/scrollLock";
 
 type Props = {
   src: string;
@@ -30,8 +31,10 @@ export function ArtworkLightbox({ src, onClose }: Props) {
       }
     };
     document.addEventListener("keydown", onKey);
+    const unlock = lockScroll();
     return () => {
       document.removeEventListener("keydown", onKey);
+      unlock();
       previouslyFocused?.focus?.({ preventScroll: true });
     };
   }, []);

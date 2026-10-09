@@ -11,6 +11,7 @@ import { SlideStrip } from "@/components/work/SlideStrip";
 import { CategoryTitle, Intro } from "@/components/work/Intro";
 import { categoriesOf, prefersReducedMotion } from "@/components/work/layout";
 import { cn } from "@/lib/utils";
+import { lockScroll } from "@/lib/scrollLock";
 
 const INTRO_KEY = "tav-intro-seen";
 
@@ -43,13 +44,7 @@ const Home = () => {
   const [entered, setEntered] = useState(!showIntro);
 
   // the Work view is a full-screen wall: no page scroll while it is up
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  useEffect(() => lockScroll(), []);
 
   // slider view hangs the work on a dark wall
   useEffect(() => {

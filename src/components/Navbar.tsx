@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { lockScroll } from "@/lib/scrollLock";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,11 +20,15 @@ const Navbar = () => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsOpen(false);
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // the menu is mobile-only: close it if the screen grows past the breakpoint (e.g. rotation)
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const onDesktop = () => desktop.matches && setIsOpen(false);
+    desktop.addEventListener("change", onDesktop);
+    const unlock = lockScroll();
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      desktop.removeEventListener("change", onDesktop);
+      unlock();
     };
   }, [isOpen]);
 
