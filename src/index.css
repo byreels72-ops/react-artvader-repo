@@ -447,6 +447,91 @@ very different sizes, the artwork doing the talking. Motion is short, eased and 
   to { opacity: 1; scale: 1; }
 }
 
+/* ---------- WhatsApp bubble ----------
+   An ink disc in the corner; a lighter tone rises inside it on hover (as .btn-ink) and a label
+   slides out beside it. Sits under the mobile menu (z-45), selects and the lightbox. */
+
+.wa-bubble {
+  position: fixed;
+  right: 1.25rem;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  animation: wa-in 0.9s var(--ease-out) 0.5s both;
+}
+/* Work view (mobile): clear the stacked category title, switch and links */
+.wa-bubble.is-home {
+  bottom: 13.5rem;
+}
+@media (min-width: 768px) {
+  .wa-bubble {
+    right: 1.5rem;
+    bottom: 1.5rem;
+  }
+  /* Work view (desktop): sit just above the grid / slider switch */
+  .wa-bubble.is-home {
+    bottom: 4.25rem;
+  }
+}
+.wa-bubble__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 999px;
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  box-shadow: 0 10px 24px -12px hsl(var(--foreground) / 0.6);
+  transition: scale 0.5s var(--ease-out), background-color 0.6s var(--ease-out), color 0.6s var(--ease-out);
+}
+.wa-bubble__icon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: hsl(var(--muted-foreground));
+  transform: translateY(101%);
+  transition: transform 0.5s var(--ease-out);
+}
+.wa-bubble__label {
+  padding: 0.5rem 0.875rem;
+  border-radius: 999px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1.5px solid hsl(var(--foreground));
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  translate: 8px 0;
+  transition: opacity 0.4s var(--ease-out), translate 0.5s var(--ease-out);
+}
+.wa-bubble:hover .wa-bubble__icon::before,
+.wa-bubble:focus-visible .wa-bubble__icon::before {
+  transform: translateY(0);
+}
+.wa-bubble:hover .wa-bubble__label,
+.wa-bubble:focus-visible .wa-bubble__label {
+  opacity: 1;
+  translate: 0 0;
+}
+.wa-bubble:active .wa-bubble__icon {
+  scale: 0.94;
+}
+@media (hover: none) {
+  .wa-bubble__label {
+    display: none;
+  }
+}
+@keyframes wa-in {
+  from { opacity: 0; scale: 0.6; }
+  to { opacity: 1; scale: 1; }
+}
+
 /* ---------- Reduced motion: no movement, everything visible ---------- */
 
 @media (prefers-reduced-motion: reduce) {

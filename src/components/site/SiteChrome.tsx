@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
+import { WhatsAppBubble } from "./WhatsAppBubble";
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -9,6 +10,7 @@ const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)"
  *  - the crosshair cursor on fine-pointer devices
  *  - an ink curtain that lifts off the new page on route change
  *  - start each new page at the top (back/forward keeps the browser's position)
+ *  - the floating WhatsApp shortcut
  */
 export function SiteChrome() {
   useRevealObserver();
@@ -23,6 +25,7 @@ export function SiteChrome() {
   return (
     <>
       <Curtain pathname={pathname} />
+      <WhatsAppBubble />
       <Cursor />
     </>
   );

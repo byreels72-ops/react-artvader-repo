@@ -3,51 +3,38 @@
  * full-screen preview) are untouched; these are only used where a smaller image is enough.
  *  - display: ~960px WebP for grid cards
  *  - thumbs: 512px WebP for the infinite grid and slider strip
+ *
+ * Variants are matched to their original by file name: portfolio-12.jpg ->
+ * display/portfolio-12-display.webp and thumbs/portfolio-12-512.webp.
  */
-import hero from "@/assets/hero-img.jpg";
-import p1 from "@/assets/portfolio-1.jpg";
-import p2 from "@/assets/portfolio-2.jpg";
-import p3 from "@/assets/portfolio-3.jpg";
-import p4 from "@/assets/portfolio-4.jpg";
-import p5 from "@/assets/portfolio-5.jpg";
-import p6 from "@/assets/portfolio-6.jpg";
-import p8 from "@/assets/portfolio-8.jpg";
-import p9 from "@/assets/portfolio-9.jpg";
-import p10 from "@/assets/portfolio-10.jpg";
-
-import heroD from "@/assets/display/hero-img-display.webp";
-import p1D from "@/assets/display/portfolio-1-display.webp";
-import p2D from "@/assets/display/portfolio-2-display.webp";
-import p3D from "@/assets/display/portfolio-3-display.webp";
-import p4D from "@/assets/display/portfolio-4-display.webp";
-import p5D from "@/assets/display/portfolio-5-display.webp";
-import p6D from "@/assets/display/portfolio-6-display.webp";
-import p8D from "@/assets/display/portfolio-8-display.webp";
-import p9D from "@/assets/display/portfolio-9-display.webp";
-import p10D from "@/assets/display/portfolio-10-display.webp";
-
-import p1T from "@/assets/thumbs/portfolio-1-512.webp";
-import p2T from "@/assets/thumbs/portfolio-2-512.webp";
-import p3T from "@/assets/thumbs/portfolio-3-512.webp";
-import p4T from "@/assets/thumbs/portfolio-4-512.webp";
-import p5T from "@/assets/thumbs/portfolio-5-512.webp";
-import p6T from "@/assets/thumbs/portfolio-6-512.webp";
-import p8T from "@/assets/thumbs/portfolio-8-512.webp";
-import p9T from "@/assets/thumbs/portfolio-9-512.webp";
-import p10T from "@/assets/thumbs/portfolio-10-512.webp";
-
-const display: Record<string, string> = {
-  [hero]: heroD,
-  [p1]: p1D,
-  [p2]: p2D,
-  [p3]: p3D,
-  [p4]: p4D,
-  [p5]: p5D,
-  [p6]: p6D,
-  [p8]: p8D,
-  [p9]: p9D,
-  [p10]: p10D,
+const glob = {
+  // portfolio-7 is an unused duplicate of portfolio-8; keep it out of the build
+  originals: import.meta.glob<string>(["/src/assets/hero-img.jpg", "/src/assets/portfolio-*.jpg", "!**/portfolio-7.jpg"], {
+    eager: true,
+    import: "default",
+  }),
+  display: import.meta.glob<string>("/src/assets/display/*-display.webp", { eager: true, import: "default" }),
+  thumbs: import.meta.glob<string>("/src/assets/thumbs/*-512.webp", { eager: true, import: "default" }),
 };
+
+const baseName = (path: string) => path.replace(/^.*\//, "").replace(/(-display|-512)?\.\w+$/, "");
+
+const byName = (files: Record<string, string>) =>
+  new Map(Object.entries(files).map(([path, url]) => [baseName(path), url]));
+
+/** original image url -> variant url, for every original that has that variant */
+function variantsFor(files: Record<string, string>): Record<string, string> {
+  const named = byName(files);
+  const out: Record<string, string> = {};
+  for (const [path, url] of Object.entries(glob.originals)) {
+    const variant = named.get(baseName(path));
+    if (variant) out[url] = variant;
+  }
+  return out;
+}
+
+const display = variantsFor(glob.display);
+const thumbs = variantsFor(glob.thumbs);
 
 /** ~960px image for on-page display; falls back to the original. */
 export function displaySrc(original: string): string {
@@ -58,18 +45,3 @@ export function displaySrc(original: string): string {
 export function thumbSrc(original: string): string {
   return thumbs[original] ?? displaySrc(original);
 }
-
-/** Same order as portfolioItems. */
-export const artworkThumbs: string[] = [p1T, p2T, p3T, p4T, p5T, p6T, p10T, p8T, p9T];
-
-const thumbs: Record<string, string> = {
-  [p1]: p1T,
-  [p2]: p2T,
-  [p3]: p3T,
-  [p4]: p4T,
-  [p5]: p5T,
-  [p6]: p6T,
-  [p8]: p8T,
-  [p9]: p9T,
-  [p10]: p10T,
-};

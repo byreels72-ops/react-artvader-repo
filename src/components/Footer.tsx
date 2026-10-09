@@ -1,10 +1,11 @@
 import { Instagram, Facebook, MessageCircleMore} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { whatsappUrl } from "@/data/contact";
 
 const social = [
   { name: "Instagram", href: "https://www.instagram.com/the_art_vader_", Icon: Instagram },
   // { name: "Facebook", href: "https://facebook.com", Icon: Facebook },
-  { name: "WhatsApp", href: "https://wa.me/7006903188", Icon: MessageCircleMore },
+  { name: "WhatsApp", href: whatsappUrl(), Icon: MessageCircleMore },
 ];
 
 /**

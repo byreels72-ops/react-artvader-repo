@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SplitText } from "@/components/site/SplitText";
+import { whatsappUrl } from "@/data/contact";
 
 export default function BookAppointment() {
   const [form, setForm] = useState({
@@ -165,6 +166,27 @@ export default function BookAppointment() {
           <SplitText as="h1" text="Book an Appointment" className="display-md max-w-[10ch] md:sticky md:top-32" />
         </div>
         <div className="md:col-span-6 md:col-start-7">
+
+        <div
+          role="note"
+          data-reveal="fade"
+          className="ui-text mb-12 border-t border-foreground pt-3"
+        >
+          <p className="text-muted-foreground">Note</p>
+          <p className="mt-2 max-w-md text-lg">
+            Our email service is under maintenance for now, so requests sent through this form may be
+            delayed. For a quicker reply, message us on{" "}
+            <a
+              href={whatsappUrl("Hi! I'd like to book an appointment.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-line"
+            >
+              WhatsApp
+            </a>
+            .
+          </p>
+        </div>
 
         {submitted && (
           <p
