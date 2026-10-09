@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SplitText } from "@/components/site/SplitText";
 
 export default function BookAppointment() {
   const [form, setForm] = useState({
@@ -32,6 +33,8 @@ export default function BookAppointment() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const microsoftEmailRegex =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.(?:[a-zA-Z]{2,})$/;
@@ -104,32 +107,34 @@ export default function BookAppointment() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (isSubmitDisabled) return;
+    if (isSubmitDisabled || sending) return;
 
-    const data = new FormData();
+    const data = new FormData(e.currentTarget);
     Object.entries(form).forEach(([key, value]) => {
-      data.append(key, value);
+      data.set(key, value);
     });
 
+    setSending(true);
+    setSubmitError("");
     try {
-      const response = await fetch(
-        `https://formspree.io/f/${import.meta.env.VITE_FORM_KEY}`,
-        {
-          method: "POST",
-          body: data,
-          headers: { Accept: "application/json" },
-        }
-      );
+      // emailed to the artist through Resend (see server/booking.ts)
+      const response = await fetch("/api/book-appointment", {
+        method: "POST",
+        body: data,
+        headers: { Accept: "application/json" },
+      });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
 
-      // Formspree validation error (ex: TYPE_EMAIL)
+      // server-side validation error (ex: email)
       if (!response.ok) {
         if (result?.errors?.[0]?.field === "email") {
           setErrors((prev) => ({
             ...prev,
             email: result.errors[0].message || "Invalid email",
           }));
+        } else {
+          setSubmitError(result?.errors?.[0]?.message || "Could not send your request. Please try again.");
         }
         return;
       }
@@ -145,34 +150,47 @@ export default function BookAppointment() {
       });
     } catch (err) {
       console.error("Form error:", err);
+      setSubmitError("Could not send your request. Please check your connection and try again.");
+    } finally {
+      setSending(false);
     }
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen page-layer">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-32 pb-20">
-        <h1 className="text-5xl md:text-6xl font-black mb-8 text-center bg-gradient-urban bg-clip-text text-transparent">
-          Book an Appointment
-        </h1>
+      <main className="grid grid-cols-1 gap-12 px-5 pt-36 md:grid-cols-12 md:gap-6 md:px-6 md:pt-44">
+        <div className="md:col-span-5">
+          <SplitText as="h1" text="Book an Appointment" className="display-md max-w-[10ch] md:sticky md:top-32" />
+        </div>
+        <div className="md:col-span-6 md:col-start-7">
 
         {submitted && (
-          <p className="text-center text-green-500 text-lg mb-6 font-semibold animate-fade-in">
+          <p
+            role="status"
+            className="ui-text mb-8 border-t border-foreground pt-3 text-lg animate-fade-in"
+          >
             Appointment request sent successfully!
           </p>
         )}
 
-        <div className="max-w-2xl mx-auto">
+        <div data-reveal="fade">
           <form
             onSubmit={handleSubmit}
-            className="space-y-6 bg-card p-8 rounded-lg border border-border shadow-deep"
+            className="space-y-9"
           >
+            {/* spam trap: hidden from people, bots fill it in */}
+            <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+              <label htmlFor="company">Company</label>
+              <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+            </div>
+
             {/* Name */}
             <div>
               <label
                 htmlFor="name"
-                className="block text-sm font-semibold mb-2"
+                className="ui-text block text-muted-foreground mb-1"
               >
                 Name *
               </label>
@@ -181,11 +199,13 @@ export default function BookAppointment() {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                className="bg-muted border-border"
+                aria-invalid={errors.name ? true : undefined}
+                aria-describedby={errors.name ? "name-error" : undefined}
+                className="field-line"
                 required
               />
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                <p id="name-error" className="text-destructive text-sm mt-2">{errors.name}</p>
               )}
             </div>
 
@@ -193,7 +213,7 @@ export default function BookAppointment() {
             <div>
               <label
                 htmlFor="phone"
-                className="block text-sm font-semibold mb-2"
+                className="ui-text block text-muted-foreground mb-1"
               >
                 Your Phone Number *
               </label>
@@ -203,11 +223,13 @@ export default function BookAppointment() {
                 type="tel"
                 value={form.phone}
                 onChange={handleChange}
-                className="bg-muted border-border"
+                aria-invalid={errors.phone ? true : undefined}
+                aria-describedby={errors.phone ? "phone-error" : undefined}
+                className="field-line"
                 required
               />
               {errors.phone && (
-                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                <p id="phone-error" className="text-destructive text-sm mt-2">{errors.phone}</p>
               )}
             </div>
 
@@ -215,7 +237,7 @@ export default function BookAppointment() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-semibold mb-2"
+                className="ui-text block text-muted-foreground mb-1"
               >
                 Email *
               </label>
@@ -225,17 +247,19 @@ export default function BookAppointment() {
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                className="bg-muted border-border"
+                aria-invalid={errors.email ? true : undefined}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                className="field-line"
                 required
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                <p id="email-error" className="text-destructive text-sm mt-2">{errors.email}</p>
               )}
             </div>
 
             {/* Artwork Type */}
             <div>
-              <label className="block text-sm font-semibold mb-2">
+              <label id="artworkType-label" className="ui-text block text-muted-foreground mb-1">
                 Type of Artwork *
               </label>
               <Select
@@ -243,7 +267,7 @@ export default function BookAppointment() {
                 onValueChange={handleArtworkTypeChange}
                 required
               >
-                <SelectTrigger className="bg-muted border-border">
+                <SelectTrigger aria-labelledby="artworkType-label" className="field-line">
                   <SelectValue placeholder="Select artwork type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -258,7 +282,7 @@ export default function BookAppointment() {
             <div>
               <label
                 htmlFor="date"
-                className="block text-sm font-semibold mb-2"
+                className="ui-text block text-muted-foreground mb-1"
               >
                 Desired Date *
               </label>
@@ -268,7 +292,7 @@ export default function BookAppointment() {
                 type="date"
                 value={form.date}
                 onChange={handleDateChange}
-                className="bg-muted border-border"
+                className="field-line"
                 required
               />
             </div>
@@ -277,7 +301,7 @@ export default function BookAppointment() {
             <div>
               <label
                 htmlFor="message"
-                className="block text-sm font-semibold mb-2"
+                className="ui-text block text-muted-foreground mb-1"
               >
                 Project Details *
               </label>
@@ -286,23 +310,34 @@ export default function BookAppointment() {
                 name="message"
                 value={form.message}
                 onChange={handleChange}
-                className="bg-muted border-border min-h-32"
+                aria-invalid={errors.message ? true : undefined}
+                aria-describedby={errors.message ? "message-error" : undefined}
+                className="field-line min-h-32 resize-y"
                 required
               />
               {errors.message && (
-                <p className="text-red-500 text-sm mt-1">{errors.message}</p>
+                <p id="message-error" className="text-destructive text-sm mt-2">{errors.message}</p>
               )}
             </div>
 
             {/* Submit */}
             <Button
               type="submit"
-              disabled={isSubmitDisabled}
-              className="w-full bg-gradient-urban text-primary-foreground font-bold py-6 text-lg shadow-glow disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={isSubmitDisabled || sending}
+              aria-busy={sending}
+              variant="ink"
+              className="h-auto w-full rounded-full px-8 py-4 text-base disabled:opacity-30 disabled:cursor-not-allowed md:w-auto"
             >
-              Submit Appointment
+              {sending ? "Sending…" : "Submit Appointment"}
             </Button>
+
+            {submitError && (
+              <p role="alert" className="text-destructive text-sm">
+                {submitError}
+              </p>
+            )}
           </form>
+        </div>
         </div>
       </main>
 

@@ -10,6 +10,7 @@ import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
 import BookAppointment from "./pages/BookAppointment";
 import NotFound from "./pages/NotFound";
+import { SiteChrome } from "./components/site/SiteChrome";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <SiteChrome />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />

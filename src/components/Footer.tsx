@@ -1,64 +1,75 @@
 import { Instagram, Facebook, MessageCircleMore} from "lucide-react";
+import { cn } from "@/lib/utils";
 
+const social = [
+  { name: "Instagram", href: "https://www.instagram.com/the_art_vader_", Icon: Instagram },
+  // { name: "Facebook", href: "https://facebook.com", Icon: Facebook },
+  { name: "WhatsApp", href: "https://wa.me/7006903188", Icon: MessageCircleMore },
+];
 
-const Footer = () => {
+/**
+ * `full` — the regular footer on scrolling pages.
+ * `compact` — a single line pinned in the corner of the full-screen Work view, same links.
+ */
+const Footer = ({ variant = "full", className }: { variant?: "full" | "compact"; className?: string }) => {
+  if (variant === "compact") {
+    return (
+      <footer className={cn("ui-text text-muted-foreground", className)}>
+        {social.map(({ name, href }, i) => (
+          <span key={name}>
+            <a href={href} target="_blank" rel="noopener noreferrer" className="link-line text-foreground">
+              {name}
+            </a>
+            {i < social.length - 1 && ", "}
+          </span>
+        ))}
+        <span className="mx-2" aria-hidden="true">
+          —
+        </span>
+        <span>&copy; 2025 The Art Vader</span>
+      </footer>
+    );
+  }
+
   return (
-    <footer className="bg-card border-t border-border mt-20">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-2xl font-black bg-gradient-urban bg-clip-text text-transparent mb-4">
-              KASHMIR GRAFFITI
-            </h3>
-            <p className="text-muted-foreground">
-              Coloring Kashmir, One Wall at a Time
-            </p>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-lg mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-muted-foreground">
-              <li><a href="/about" className="hover:text-primary transition-colors">About</a></li>
-              <li><a href="/portfolio" className="hover:text-primary transition-colors">Portfolio</a></li>
-              <li><a href="/shop" className="hover:text-primary transition-colors">Shop</a></li>
-              {/* <li><a href="/contact" className="hover:text-primary transition-colors">Contact</a></li> */}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-lg mb-4">Follow Us</h4>
-            <div className="flex gap-4">
-              <a
-                href="https://www.instagram.com/the_art_vader_"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-gradient-urban rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-glow"
-              >
-                <Instagram size={20} className="text-primary-foreground" />
-              </a>
-              {/* <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-gradient-urban rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-glow"
-              >
-                <Facebook size={20} className="text-primary-foreground" />
-              </a> */}
-              <a
-                href="https://wa.me/7006903188"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-gradient-urban rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-glow"
-              >
-                <MessageCircleMore  size={20} className="text-primary-foreground" />
-              </a>
-            </div>
-          </div>
+    <footer className={cn("px-5 pb-6 pt-28 md:px-6", className)}>
+      <div className="grid grid-cols-1 gap-10 border-t border-foreground/80 pt-6 md:grid-cols-12" data-reveal="fade">
+        <div className="md:col-span-5">
+          <h3 className="text-3xl md:text-4xl">
+            KASHMIR GRAFFITI
+          </h3>
+          <p className="ui-text mt-3 text-muted-foreground">
+            Coloring Kashmir, One Wall at a Time
+          </p>
         </div>
 
-        <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
-          <p>&copy; 2025 The Art Vader. All rights reserved.</p>
+        <div className="ui-text md:col-span-3">
+          <h4 className="mb-3 text-muted-foreground">Quick Links</h4>
+          <ul className="space-y-1.5">
+            <li><a href="/about" className="link-line">About</a></li>
+            <li><a href="/portfolio" className="link-line">Portfolio</a></li>
+            <li><a href="/shop" className="link-line">Shop</a></li>
+            {/* <li><a href="/contact" className="hover:text-primary transition-colors">Contact</a></li> */}
+          </ul>
         </div>
+
+        <div className="ui-text md:col-span-4">
+          <h4 className="mb-3 text-muted-foreground">Follow Us</h4>
+          <ul className="space-y-1.5">
+            {social.map(({ name, href, Icon }) => (
+              <li key={name}>
+                <a href={href} target="_blank" rel="noopener noreferrer" className="link-line inline-flex items-center gap-2">
+                  <Icon size={16} aria-hidden="true" />
+                  {name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="ui-text mt-16 text-muted-foreground">
+        <p>&copy; 2025 The Art Vader. All rights reserved.</p>
       </div>
     </footer>
   );

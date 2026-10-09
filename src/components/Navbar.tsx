@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,79 +14,89 @@ const Navbar = () => {
     // { name: "Contact", path: "/contact" },
   ];
 
+  // close the mobile menu with Escape and lock page scroll while it is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsOpen(false);
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          <Link
-            to="/"
-            className="text-2xl font-black bg-gradient-urban bg-clip-text text-transparent"
-          >
+    <>
+      {/* white + difference blend reads as ink on paper and as paper on photos / dark mode */}
+      <nav className="pointer-events-none fixed left-0 right-0 top-0 z-50 text-white mix-blend-difference">
+        <div className="flex items-start justify-between px-5 pt-5 md:px-6">
+          <Link to="/" className="pointer-events-auto text-[1.45rem] font-bold leading-none tracking-[-0.06em]">
             The Art Vader
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => {
+          <div className="ui-text pointer-events-auto hidden items-center md:flex">
+            {navLinks.map((link, i) => {
               const isActive = pathname === link.path;
-
               return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`font-semibold transition-colors duration-200 ${
-                    isActive
-                      ? "text-primary underline underline-offset-4 decoration-primary"
-                      : "text-foreground hover:text-primary"
-                  }`}
-                >
-                  {link.name}
-                </Link>
+                <span key={link.path}>
+                  <Link to={link.path} aria-current={isActive ? "page" : undefined} className="link-line">
+                    {link.name}
+                  </Link>
+                  {i < navLinks.length - 1 && <span aria-hidden="true">,&nbsp;</span>}
+                </span>
               );
             })}
-
-            <Link to="/book">
-              <Button className="bg-gradient-urban text-primary-foreground font-bold shadow-glow hover:scale-105 transition-transform">
-                Book Now
-              </Button>
+            <span aria-hidden="true" className="mx-3 h-3 w-px bg-current opacity-50" />
+            <Link to="/book" aria-current={pathname === "/book" ? "page" : undefined} className="link-line">
+              Book Now
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
-          <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-foreground">
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="ui-text link-line pointer-events-auto md:hidden"
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
+          >
+            {isOpen ? "Close" : "Menu"}
           </button>
         </div>
+      </nav>
 
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden pb-6 animate-fade-in">
-            {navLinks.map((link) => {
+      {/* Mobile Navigation */}
+      {isOpen && (
+        <div
+          id="mobile-menu"
+          className="lightbox fixed inset-0 z-[45] flex flex-col justify-end bg-background px-5 pb-10 pt-24 md:hidden"
+        >
+          <ul className="space-y-1">
+            {[...navLinks, { name: "Book Now", path: "/book" }].map((link, i) => {
               const isActive = pathname === link.path;
-
               return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`block py-3 font-semibold transition-colors ${
-                    isActive ? "text-primary" : "text-foreground hover:text-primary"
-                  }`}
-                >
-                  {link.name}
-                </Link>
+                <li key={link.path} className="overflow-hidden">
+                  <Link
+                    to={link.path}
+                    onClick={() => setIsOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "rise block text-[15vw] font-bold leading-[0.95] tracking-[-0.06em]",
+                      !isActive && "text-foreground/40",
+                    )}
+                  >
+                    <span style={{ "--d": `${120 + i * 70}ms` } as CSSProperties}>{link.name}</span>
+                  </Link>
+                </li>
               );
             })}
-
-            <Link to="/book" onClick={() => setIsOpen(false)}>
-              <Button className="w-full mt-4 bg-gradient-urban text-primary-foreground font-bold">
-                Book Now
-              </Button>
-            </Link>
-          </div>
-        )}
-      </div>
-    </nav>
+          </ul>
+        </div>
+      )}
+    </>
   );
 };
 
