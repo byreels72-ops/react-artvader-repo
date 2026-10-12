@@ -119,7 +119,7 @@ export default function BookAppointment() {
     setSending(true);
     setSubmitError("");
     try {
-      // emailed to the artist through Resend (see server/booking.ts)
+      // emailed to the artist through Resend (see api/book-appointment.ts)
       const response = await fetch("/api/book-appointment", {
         method: "POST",
         body: data,

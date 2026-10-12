@@ -14,7 +14,7 @@ function bookingApi(env: Record<string, string>): Plugin {
     configureServer(server) {
       server.middlewares.use("/api/book-appointment", async (req, res) => {
         try {
-          const { handleBookingRequest } = await server.ssrLoadModule("/server/booking.ts");
+          const { handleBookingRequest } = await server.ssrLoadModule("/api/book-appointment.ts");
           const chunks: Buffer[] = [];
           for await (const c of req) chunks.push(c as Buffer);
           const request = new Request(`http://localhost${req.originalUrl ?? req.url}`, {
