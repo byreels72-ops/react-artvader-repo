@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SplitText } from "@/components/site/SplitText";
-import { whatsappUrl } from "@/data/contact";
+import { SentDialog } from "@/components/site/SentDialog";
 
 export default function BookAppointment() {
   const [form, setForm] = useState({
@@ -34,6 +34,7 @@ export default function BookAppointment() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [sentName, setSentName] = useState("");
   const [sending, setSending] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -140,6 +141,7 @@ export default function BookAppointment() {
         return;
       }
 
+      setSentName(form.name.trim().split(/\s+/)[0] ?? "");
       setSubmitted(true);
       setForm({
         name: "",
@@ -167,35 +169,6 @@ export default function BookAppointment() {
         </div>
         <div className="md:col-span-6 md:col-start-7">
 
-        <div
-          role="note"
-          data-reveal="fade"
-          className="ui-text mb-12 border-t border-foreground pt-3"
-        >
-          <p className="text-muted-foreground">Note</p>
-          <p className="mt-2 max-w-md text-lg">
-            Our email service is under maintenance for now, so requests sent through this form may be
-            delayed. For a quicker reply, message us on{" "}
-            <a
-              href={whatsappUrl("Hi! I'd like to book an appointment.")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="link-line"
-            >
-              WhatsApp
-            </a>
-            .
-          </p>
-        </div>
-
-        {submitted && (
-          <p
-            role="status"
-            className="ui-text mb-8 border-t border-foreground pt-3 text-lg animate-fade-in"
-          >
-            Appointment request sent successfully!
-          </p>
-        )}
 
         <div data-reveal="fade">
           <form
@@ -364,6 +337,8 @@ export default function BookAppointment() {
       </main>
 
       <Footer />
+
+      {submitted && <SentDialog name={sentName} onClose={() => setSubmitted(false)} />}
     </div>
   );
 }
